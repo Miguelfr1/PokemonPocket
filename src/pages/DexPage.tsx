@@ -380,6 +380,7 @@ export default function DexPage({ session, onLogout }: DexPageProps) {
                 collectors={collectors}
                 activeCollector={activeCollector}
                 compareCollector={compareCollector}
+                entries={entries}
                 misses={misses}
                 onRemove={removeMiss}
               />
