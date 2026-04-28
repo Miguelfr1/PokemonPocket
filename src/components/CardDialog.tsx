@@ -116,7 +116,7 @@ export default function CardDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[92svh] overflow-x-hidden overflow-y-auto rounded-3xl border-4 border-[#253b75] bg-[#fff4bd] sm:max-w-3xl">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-h-[92svh] overflow-x-hidden overflow-y-auto rounded-3xl border-4 border-[#253b75] bg-[#fff4bd] sm:w-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2 text-2xl font-black text-[#253b75]">
             {displayCardName(card)}
@@ -146,7 +146,7 @@ export default function CardDialog({
               <div className="space-y-1.5">
                 <Label className="font-black text-[#253b75]">Collection</Label>
                 <Select value={collectorId} onValueChange={setCollectorId}>
-                  <SelectTrigger className="rounded-full border-2 border-[#253b75] bg-white font-bold">
+                  <SelectTrigger className="w-full rounded-full border-2 border-[#253b75] bg-white font-bold">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -165,7 +165,7 @@ export default function CardDialog({
                   value={source}
                   onValueChange={(v) => setSource(v as AcquisitionSource)}
                 >
-                  <SelectTrigger className="rounded-full border-2 border-[#253b75] bg-white font-bold">
+                  <SelectTrigger className="w-full rounded-full border-2 border-[#253b75] bg-white font-bold">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
