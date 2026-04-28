@@ -211,3 +211,13 @@
   inset: 0 0 50%;
   position: absolute;
 }
+
+/* Fix iOS/Safari : input[type=date] ignore les contraintes de largeur par défaut */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
