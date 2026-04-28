@@ -234,6 +234,46 @@ export async function createCollector(displayName: string): Promise<Collector> {
   return data
 }
 
+/**
+ * Cherche un ami par son pseudo dans app_accounts et retourne son collecteur.
+ * Contrairement à createCollector, ne crée rien — lit uniquement.
+ */
+export async function findFriendByPseudo(pseudo: string): Promise<Collector> {
+  const normalized = pseudo.trim()
+
+  if (!supabase) {
+    // Mode local : cherche dans les comptes locaux
+    const accounts = readLocal<Account[]>(accountsKey, [])
+    const account = accounts.find(
+      (a) => a.pseudo.toLowerCase() === normalized.toLowerCase(),
+    )
+    if (!account) throw new Error(`Aucun compte trouvé pour "${normalized}".`)
+    const collectors = readLocal<Collector[]>(collectorsKey, [])
+    const collector = collectors.find((c) => c.id === account.collector_id)
+    if (!collector) throw new Error("Compte invalide.")
+    return collector
+  }
+
+  const { data: account, error: accountError } = await supabase
+    .from("app_accounts")
+    .select("collector_id")
+    .ilike("pseudo", normalized)
+    .maybeSingle()
+
+  if (accountError) throw accountError
+  if (!account) throw new Error(`Aucun compte trouvé pour "${normalized}".`)
+
+  const { data: collector, error: collectorError } = await supabase
+    .from("collectors")
+    .select("*")
+    .eq("id", account.collector_id)
+    .single()
+
+  if (collectorError || !collector) throw new Error("Compte invalide.")
+  return collector as Collector
+}
+
+
 // ─── Collection entries ───────────────────────────────────────────────────────
 
 export async function getCollectionEntries(): Promise<CollectionEntry[]> {

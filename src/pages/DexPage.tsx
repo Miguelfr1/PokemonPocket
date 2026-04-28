@@ -43,7 +43,7 @@ import {
   type PocketData,
 } from "@/lib/pocket-data"
 import {
-  createCollector,
+  findFriendByPseudo,
   createWonderMiss,
   deleteWonderMiss,
   getCollectionEntries,
@@ -258,8 +258,15 @@ export default function DexPage({ session, onLogout }: DexPageProps) {
     setMisses((current) => current.filter((miss) => miss.id !== id))
   }
 
-  async function addFriend(displayName: string) {
-    const collector = await createCollector(displayName)
+  async function addFriend(pseudo: string) {
+    const collector = await findFriendByPseudo(pseudo)
+    
+    // Check if friend is already in the collectors list
+    if (collectors.some((c) => c.id === collector.id)) {
+      setCompareCollectorId(collector.id)
+      return
+    }
+    
     setCollectors((current) => [...current, collector])
     setCompareCollectorId(collector.id)
   }
@@ -561,7 +568,7 @@ function AddFriendDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label className="font-black text-[#253b75]">Nom</Label>
+            <Label className="font-black text-[#253b75]">Pseudo</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
