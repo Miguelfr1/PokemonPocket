@@ -298,72 +298,64 @@ export default function DexPage({ session, onLogout }: DexPageProps) {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-3 sm:px-5 lg:px-8">
 
           {/* ── Header ── */}
-          <header className="sticky top-0 z-20 -mx-3 bg-transparent px-3 py-3 sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
-            <div className="rounded-[28px] border-2 border-[#253b75]/15 bg-white/78 px-3 py-3 shadow-[0_12px_30px_rgb(37_59_117/0.12)] backdrop-blur-xl sm:px-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <header className="sticky top-0 z-20 -mx-3 bg-transparent px-3 py-2 sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
+            <div className="rounded-2xl border border-[#253b75]/15 bg-white/90 px-3 py-2 shadow-[0_8px_24px_rgb(37_59_117/0.10)] backdrop-blur-xl sm:rounded-[28px] sm:px-4 sm:py-3">
 
-                {/* Brand */}
-                <div className="flex items-center gap-3">
-                  <div className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-[#253b75] bg-[#e33535] shadow-[0_3px_0_#253b75]">
-                    <Database className="size-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <h1 className="pokemon-title-mini text-3xl sm:text-4xl">PocketDex</h1>
-                    <p className="hidden max-w-xl truncate text-sm font-extrabold text-[#2a5da8] sm:block">
-                      Ton dex, tes amis, vos différences.
-                    </p>
-                  </div>
+              {/* ── Single row: works on all screen sizes ── */}
+              <div className="flex items-center gap-2">
+
+                {/* Icon */}
+                <div className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-[#253b75] bg-[#e33535] shadow-[0_2px_0_#253b75] sm:size-10">
+                  <Database className="size-3.5 text-white sm:size-4" />
                 </div>
 
-                {/* Controls */}
-                <div className="grid gap-2 sm:grid-cols-[1fr_180px_auto] lg:w-[580px]">
-                  {/* Set selector */}
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-[#253b75]/75">Extension</Label>
-                    <Select value={selectedSetCode} onValueChange={setSelectedSetCode}>
-                      <SelectTrigger className="h-9 rounded-full border border-[#253b75]/30 bg-[#f7fbff] font-black text-[#253b75]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {data.sets
-                          .slice()
-                          .reverse()
-                          .map((set) => (
-                            <SelectItem key={set.code} value={set.code}>
-                              {set.code} · {setName(set)}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Title — hidden on very small */}
+                <h1 className="pokemon-title-mini hidden text-2xl sm:block sm:text-3xl lg:text-4xl">PocketDex</h1>
 
-                  {/* Active user (read-only display) */}
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-[#253b75]/75">Connecté en tant que</Label>
-                    <div className="flex h-9 items-center gap-2 rounded-full border border-[#253b75]/30 bg-[#f7fbff] px-3 font-black text-[#253b75]">
-                      <span
-                        className="size-3 rounded-full shrink-0"
-                        style={{ backgroundColor: activeCollector.color }}
-                      />
-                      <span className="truncate">{activeCollector.display_name}</span>
-                    </div>
-                  </div>
+                {/* Spacer */}
+                <div className="flex-1" />
 
-                  {/* Logout */}
-                  <div className="flex items-end">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      aria-label="Se déconnecter"
-                      title="Se déconnecter"
-                      className="h-9 w-9 rounded-full border-2 border-[#253b75] bg-white text-[#253b75] shadow-[0_2px_0_#253b75] hover:bg-[#f7fbff]"
-                      onClick={onLogout}
-                    >
-                      <LogOut className="size-4" />
-                    </Button>
-                  </div>
+                {/* Set selector — compact, no label */}
+                <Select value={selectedSetCode} onValueChange={setSelectedSetCode}>
+                  <SelectTrigger className="h-8 max-w-[130px] rounded-full border border-[#253b75]/30 bg-[#f7fbff] text-xs font-black text-[#253b75] sm:max-w-[200px] sm:text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {data.sets
+                      .slice()
+                      .reverse()
+                      .map((set) => (
+                        <SelectItem key={set.code} value={set.code}>
+                          {set.code} · {setName(set)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+
+                {/* User — dot only on mobile, dot+name on sm+ */}
+                <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#253b75]/30 bg-[#f7fbff] px-2 sm:px-3">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: activeCollector.color }}
+                  />
+                  <span className="hidden text-xs font-black text-[#253b75] sm:block">
+                    {activeCollector.display_name}
+                  </span>
                 </div>
+
+                {/* Logout */}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  aria-label="Se déconnecter"
+                  title="Se déconnecter"
+                  className="size-8 rounded-full border-2 border-[#253b75] bg-white text-[#253b75] shadow-[0_2px_0_#253b75] hover:bg-[#f7fbff]"
+                  onClick={onLogout}
+                >
+                  <LogOut className="size-3.5" />
+                </Button>
+
               </div>
             </div>
           </header>
