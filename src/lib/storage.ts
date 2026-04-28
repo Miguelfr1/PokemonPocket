@@ -41,10 +41,41 @@ export type WonderMiss = {
   created_at?: string
 }
 
-const LOCAL_COLLECTORS: Collector[] = [
-  { id: "miguel", display_name: "Miguel", color: "#ef4444" },
-  { id: "elle", display_name: "Elle", color: "#0ea5e9" },
-]
+// ─── Session ─────────────────────────────────────────────────────────────────
+
+export type Session = {
+  collector_id: string
+  display_name: string
+  color: string
+}
+
+const sessionKey = "pocketdex.session"
+
+export function getSession(): Session | null {
+  const raw = localStorage.getItem(sessionKey)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as Session
+  } catch {
+    return null
+  }
+}
+
+export function saveSession(collector: Collector): Session {
+  const session: Session = {
+    collector_id: collector.id,
+    display_name: collector.display_name,
+    color: collector.color,
+  }
+  localStorage.setItem(sessionKey, JSON.stringify(session))
+  return session
+}
+
+export function clearSession() {
+  localStorage.removeItem(sessionKey)
+}
+
+// ─── Local storage helpers ────────────────────────────────────────────────────
 
 const collectorsKey = "pocketdex.collectors"
 const accountsKey = "pocketdex.accounts"
@@ -54,7 +85,6 @@ const missesKey = "pocketdex.wonder_misses"
 function readLocal<T>(key: string, fallback: T): T {
   const raw = localStorage.getItem(key)
   if (!raw) return fallback
-
   try {
     return JSON.parse(raw) as T
   } catch {
@@ -65,6 +95,8 @@ function readLocal<T>(key: string, fallback: T): T {
 function writeLocal<T>(key: string, value: T) {
   localStorage.setItem(key, JSON.stringify(value))
 }
+
+// ─── Crypto helpers ───────────────────────────────────────────────────────────
 
 async function hashPassword(password: string) {
   const data = new TextEncoder().encode(password)
@@ -79,39 +111,11 @@ function colorForName(displayName: string) {
   return palette[Math.abs(displayName.length) % palette.length]
 }
 
-export async function getCollectors(): Promise<Collector[]> {
-  if (!supabase) return readLocal<Collector[]>(collectorsKey, LOCAL_COLLECTORS)
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
-  const { data, error } = await supabase.from("collectors").select("*").order("created_at")
-  if (error) throw error
-  return data
-}
-
-export async function createCollector(displayName: string): Promise<Collector> {
-  const normalizedName = displayName.trim()
-  const collector = {
-    id: crypto.randomUUID(),
-    display_name: normalizedName,
-    color: colorForName(normalizedName),
-  }
-
-  if (!supabase) {
-    const collectors = readLocal<Collector[]>(collectorsKey, LOCAL_COLLECTORS)
-    const exists = collectors.some(
-      (item) => item.display_name.toLowerCase() === normalizedName.toLowerCase(),
-    )
-    if (exists) throw new Error("Cet ami existe déjà.")
-
-    const next = [...collectors, collector]
-    writeLocal(collectorsKey, next)
-    return collector
-  }
-
-  const { data, error } = await supabase.from("collectors").insert(collector).select().single()
-  if (error) throw error
-  return data
-}
-
+/**
+ * Crée un compte et le collecteur associé. Retourne le collecteur.
+ */
 export async function createAccount(pseudo: string, password: string): Promise<Collector> {
   const normalizedPseudo = pseudo.trim()
   const passwordHash = await hashPassword(password)
@@ -130,11 +134,12 @@ export async function createAccount(pseudo: string, password: string): Promise<C
 
   if (!supabase) {
     const accounts = readLocal<Account[]>(accountsKey, [])
-    const collectors = readLocal<Collector[]>(collectorsKey, LOCAL_COLLECTORS)
-    const exists = accounts.some((item) => item.pseudo.toLowerCase() === normalizedPseudo.toLowerCase())
-      || collectors.some((item) => item.display_name.toLowerCase() === normalizedPseudo.toLowerCase())
+    const collectors = readLocal<Collector[]>(collectorsKey, [])
+    const pseudoTaken =
+      accounts.some((a) => a.pseudo.toLowerCase() === normalizedPseudo.toLowerCase()) ||
+      collectors.some((c) => c.display_name.toLowerCase() === normalizedPseudo.toLowerCase())
 
-    if (exists) throw new Error("Ce pseudo existe déjà.")
+    if (pseudoTaken) throw new Error("Ce pseudo est déjà pris.")
 
     writeLocal(collectorsKey, [...collectors, collector])
     writeLocal(accountsKey, [...accounts, account])
@@ -146,7 +151,6 @@ export async function createAccount(pseudo: string, password: string): Promise<C
     .insert(collector)
     .select()
     .single()
-
   if (collectorError) throw collectorError
 
   const { error: accountError } = await supabase.from("app_accounts").insert(account)
@@ -154,6 +158,83 @@ export async function createAccount(pseudo: string, password: string): Promise<C
 
   return createdCollector
 }
+
+/**
+ * Connecte un utilisateur existant. Retourne le collecteur associé.
+ */
+export async function login(pseudo: string, password: string): Promise<Collector> {
+  const normalizedPseudo = pseudo.trim()
+  const passwordHash = await hashPassword(password)
+
+  if (!supabase) {
+    const accounts = readLocal<Account[]>(accountsKey, [])
+    const account = accounts.find(
+      (a) =>
+        a.pseudo.toLowerCase() === normalizedPseudo.toLowerCase() &&
+        a.password_hash === passwordHash,
+    )
+    if (!account) throw new Error("Pseudo ou mot de passe incorrect.")
+
+    const collectors = readLocal<Collector[]>(collectorsKey, [])
+    const collector = collectors.find((c) => c.id === account.collector_id)
+    if (!collector) throw new Error("Compte invalide, contacte l'admin.")
+    return collector
+  }
+
+  const { data: account, error: accountError } = await supabase
+    .from("app_accounts")
+    .select("collector_id")
+    .ilike("pseudo", normalizedPseudo)
+    .eq("password_hash", passwordHash)
+    .maybeSingle()
+
+  if (accountError) throw accountError
+  if (!account) throw new Error("Pseudo ou mot de passe incorrect.")
+
+  const { data: collector, error: collectorError } = await supabase
+    .from("collectors")
+    .select("*")
+    .eq("id", account.collector_id)
+    .single()
+
+  if (collectorError || !collector) throw new Error("Compte invalide.")
+  return collector as Collector
+}
+
+// ─── Collectors ───────────────────────────────────────────────────────────────
+
+export async function getCollectors(): Promise<Collector[]> {
+  if (!supabase) return readLocal<Collector[]>(collectorsKey, [])
+
+  const { data, error } = await supabase.from("collectors").select("*").order("created_at")
+  if (error) throw error
+  return data
+}
+
+export async function createCollector(displayName: string): Promise<Collector> {
+  const normalizedName = displayName.trim()
+  const collector: Collector = {
+    id: crypto.randomUUID(),
+    display_name: normalizedName,
+    color: colorForName(normalizedName),
+  }
+
+  if (!supabase) {
+    const collectors = readLocal<Collector[]>(collectorsKey, [])
+    const exists = collectors.some(
+      (c) => c.display_name.toLowerCase() === normalizedName.toLowerCase(),
+    )
+    if (exists) throw new Error("Ce nom de collecteur existe déjà.")
+    writeLocal(collectorsKey, [...collectors, collector])
+    return collector
+  }
+
+  const { data, error } = await supabase.from("collectors").insert(collector).select().single()
+  if (error) throw error
+  return data
+}
+
+// ─── Collection entries ───────────────────────────────────────────────────────
 
 export async function getCollectionEntries(): Promise<CollectionEntry[]> {
   if (!supabase) return readLocal<CollectionEntry[]>(entriesKey, [])
@@ -190,6 +271,8 @@ export async function saveCollectionEntry(entry: CollectionEntry): Promise<Colle
   if (error) throw error
   return data
 }
+
+// ─── Wonder misses ────────────────────────────────────────────────────────────
 
 export async function getWonderMisses(): Promise<WonderMiss[]> {
   if (!supabase) return readLocal<WonderMiss[]>(missesKey, [])

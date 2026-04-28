@@ -181,7 +181,30 @@
   position: relative;
 }
 
+/* Shiny rarity rainbow shimmer */
+.rarity-shiny {
+  background: linear-gradient(
+    90deg,
+    #22d3ee 0%,
+    #a855f7 25%,
+    #ec4899 50%,
+    #f59e0b 75%,
+    #22d3ee 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-shimmer 2.5s linear infinite;
+}
+
+@keyframes shiny-shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
 .pokeball-dot::before {
+
   background: #e33535;
   border-radius: 999px 999px 0 0;
   content: "";
