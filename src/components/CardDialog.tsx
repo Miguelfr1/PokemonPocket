@@ -181,12 +181,14 @@ export default function CardDialog({
 
             <div className="space-y-1.5">
               <Label className="font-black text-[#253b75]">Date d'obtention</Label>
-              <Input
-                type="date"
-                value={obtainedAt}
-                onChange={(e) => setObtainedAt(e.target.value)}
-                className="w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
-              />
+              <div className="min-w-0 overflow-hidden">
+                <Input
+                  type="date"
+                  value={obtainedAt}
+                  onChange={(e) => setObtainedAt(e.target.value)}
+                  className="w-full max-w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -235,12 +237,14 @@ export default function CardDialog({
                     <CalendarDays className="size-3.5" />
                     Jour
                   </Label>
-                  <Input
-                    type="date"
-                    value={missedOn}
-                    onChange={(e) => setMissedOn(e.target.value)}
-                    className="w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
-                  />
+                  <div className="min-w-0 overflow-hidden">
+                    <Input
+                      type="date"
+                      value={missedOn}
+                      onChange={(e) => setMissedOn(e.target.value)}
+                      className="w-full max-w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="font-black text-[#253b75]">Contexte</Label>
