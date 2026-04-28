@@ -379,6 +379,7 @@ export default function DexPage({ session, onLogout }: DexPageProps) {
               <WonderMissPanel
                 collectors={collectors}
                 activeCollector={activeCollector}
+                compareCollector={compareCollector}
                 misses={misses}
                 onRemove={removeMiss}
               />

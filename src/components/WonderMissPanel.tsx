@@ -7,6 +7,7 @@ import type { Collector, WonderMiss } from "@/lib/storage"
 interface WonderMissPanelProps {
   collectors: Collector[]
   activeCollector: Collector
+  compareCollector?: Collector | null
   misses: WonderMiss[]
   onRemove: (id: string) => Promise<void>
 }
@@ -14,10 +15,17 @@ interface WonderMissPanelProps {
 export default function WonderMissPanel({
   collectors,
   activeCollector,
+  compareCollector,
   misses,
   onRemove,
 }: WonderMissPanelProps) {
-  const visible = misses.filter((miss) => miss.collector_id === activeCollector.id).slice(0, 12)
+  const visible = misses
+    .filter(
+      (miss) =>
+        miss.collector_id === activeCollector.id ||
+        (compareCollector && miss.collector_id === compareCollector.id),
+    )
+    .slice(0, 12)
   const collectorById = new Map(collectors.map((c) => [c.id, c]))
 
   return (
@@ -34,7 +42,7 @@ export default function WonderMissPanel({
       <CardContent className="space-y-3">
         {visible.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-[#b8c6ef] bg-[#f7fbff] p-4 text-sm font-bold text-[#52659b]">
-            Aucun raté enregistré pour {activeCollector.display_name}. 🎉
+            Aucun raté enregistré. 🎉
           </div>
         ) : (
           visible.map((miss) => (
@@ -47,15 +55,17 @@ export default function WonderMissPanel({
                     {miss.missed_on}
                   </div>
                 </div>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() => miss.id && onRemove(miss.id)}
-                  aria-label="Supprimer"
-                >
-                  <Trash2 className="size-4 text-[#e33535]" />
-                </Button>
+                {miss.collector_id === activeCollector.id && (
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => miss.id && onRemove(miss.id)}
+                    aria-label="Supprimer"
+                  >
+                    <Trash2 className="size-4 text-[#e33535]" />
+                  </Button>
+                )}
               </div>
               {miss.note && (
                 <p className="mt-2 text-sm font-bold text-[#52659b]">{miss.note}</p>
