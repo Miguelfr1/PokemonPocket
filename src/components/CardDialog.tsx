@@ -116,7 +116,7 @@ export default function CardDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[92svh] overflow-y-auto rounded-3xl border-4 border-[#253b75] bg-[#fff4bd] sm:max-w-3xl">
+      <DialogContent className="max-h-[92svh] overflow-x-hidden overflow-y-auto rounded-3xl border-4 border-[#253b75] bg-[#fff4bd] sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2 text-2xl font-black text-[#253b75]">
             {displayCardName(card)}
@@ -185,7 +185,7 @@ export default function CardDialog({
                 type="date"
                 value={obtainedAt}
                 onChange={(e) => setObtainedAt(e.target.value)}
-                className="rounded-full border-2 border-[#253b75] bg-white font-bold"
+                className="w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
               />
             </div>
 
@@ -229,7 +229,7 @@ export default function CardDialog({
                 <Sparkles className="size-4" />
                 Ajouter comme pioche miracle loupée
               </div>
-              <div className="grid gap-3 sm:grid-cols-[150px_1fr]">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-[140px_1fr]">
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-1 font-black text-[#253b75]">
                     <CalendarDays className="size-3.5" />
@@ -239,7 +239,7 @@ export default function CardDialog({
                     type="date"
                     value={missedOn}
                     onChange={(e) => setMissedOn(e.target.value)}
-                    className="rounded-full border-2 border-[#253b75] bg-white font-bold"
+                    className="w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -248,7 +248,7 @@ export default function CardDialog({
                     value={missNote}
                     onChange={(e) => setMissNote(e.target.value)}
                     placeholder="Ex: mauvaise carte choisie..."
-                    className="rounded-full border-2 border-[#253b75] bg-white font-bold"
+                    className="w-full min-w-0 rounded-full border-2 border-[#253b75] bg-white font-bold"
                   />
                 </div>
               </div>
